@@ -1,8 +1,9 @@
 import fs from 'fs';
-import { Argv } from 'yargs';
+import { ArgumentsCamelCase, Argv } from 'yargs';
 import path from "path";
-import { Funko, FunkoTipos, FunkoGenero } from "./funko.js";
-
+import chalk from "chalk";
+import { Funko,FunkoTipos, FunkoGenero } from "./funko.js";
+import { checkpath } from './checkpath.js';
 
 export interface AddFunko {
   usuario: string,
@@ -16,6 +17,38 @@ export interface AddFunko {
   exclusivo: boolean,
   caracteristicas: boolean,
   valorMercado: number
+}
+
+function addFunko(funko: Funko, usuario:string) {
+  const filePath = path.join(process.cwd(), `/db/${usuario}/${usuario}.json`);
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error(chalk.red(`Error al leer el fichero: ${err.message}`));
+      return;
+    }
+
+    // Obtener los funkos
+    let funkos: Funko[] = [];
+    funkos = JSON.parse(data);
+
+    const exists = funkos.some((f) => f.id === funko.id);
+    if (exists) {
+      console.error(chalk.red(`Error: Ya existe un Funko con el ID ${funko.id}`));
+      return;
+    }
+
+    // Añadir el nuevo Funko al array
+    funkos.push(funko);
+
+    fs.writeFile(filePath, JSON.stringify(funkos, null, 2), 'utf8', (writeErr) => {
+      if (writeErr) {
+        console.error(chalk.red(`Error al escribir en el fichero: ${writeErr.message}`));
+      } else {
+        console.log(chalk.green(`Funko añadido correctamente: ${funko.nombre}`));
+      }
+    });
+  });
 }
 
 export const addCommand = {
@@ -35,22 +68,9 @@ export const addCommand = {
       .option('caracteristicas', { type: 'boolean', demandOption: true, describe: 'Características especiales' })
       .option('valorMercado', { type: 'number', demandOption: true, describe: 'Valor de mercado' });
   },
-  handler: (argv: AddFunko) => {
-    const userDir = path.join(__dirname, 'data', argv.usuario);
-
-    if (!fs.existsSync(userDir)) {
-      fs.mkdirSync(userDir, { recursive: true });
-    }
-
-    const funkoPath = path.join(userDir, `${argv.id}.json`);
-
-    if (fs.existsSync(funkoPath)) {
-      console.error('Ya existe un Funko con este ID.');
-      return;
-    }
-
-    const newFunko: AddFunko = {
-      usuario: argv.usuario,
+  handler: (argv: ArgumentsCamelCase<AddFunko>) => {
+    checkpath(argv.usuario)
+    const newFunko: Funko = {
       id: argv.id,
       nombre: argv.nombre,
       desc: argv.desc,
@@ -62,8 +82,8 @@ export const addCommand = {
       caracteristicas: argv.caracteristicas,
       valorMercado: argv.valorMercado,
     };
-
-    fs.writeFileSync(funkoPath, JSON.stringify(newFunko, null, 2));
-    console.log('¡Funko añadido con éxito!');
-  },
+    setTimeout(() => {
+      addFunko(newFunko, argv.usuario);
+    }, 100); // Espera 100ms antes de ejecutar addFunko
+  }
 };
