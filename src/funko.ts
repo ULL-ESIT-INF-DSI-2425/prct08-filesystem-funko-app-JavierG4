@@ -15,6 +15,6 @@ export interface Funko {
   franquicia: string,
   numero: number,
   exclusivo: boolean,
-  caracteristicas: boolean
+  caracteristicas: string
   valorMercado: number
 }

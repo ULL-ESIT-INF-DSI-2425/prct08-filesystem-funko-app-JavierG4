@@ -2,58 +2,41 @@ import fs from 'fs';
 import { ArgumentsCamelCase, Argv } from 'yargs';
 import path from "path";
 import chalk from "chalk";
-import { Funko,FunkoTipos, FunkoGenero } from "./funko.js";
+import {Funko,FunkoTipos,FunkoGenero } from "./funko.js";
 import { checkpath } from './checkpath.js';
+import { AddFunko } from './addcommand.js';
 
-export interface AddFunko {
-  usuario: string,
-  id: number,
-  nombre: string,
-  desc: string,
-  tipo: FunkoTipos,
-  genero: FunkoGenero,
-  franquicia: string,
-  numero: number,
-  exclusivo: boolean,
-  caracteristicas: string,
-  valorMercado: number
-}
 
-function addFunko(funko: Funko, usuario:string) {
+export function modifyFunko(usuario:string, funko:Funko) {
   const filePath = path.join(process.cwd(), `/db/${usuario}/${usuario}.json`);
-
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) {
-      console.error(chalk.red(`Error al leer el fichero: ${err.message}`));
-      return;
+  console.log("eeeeeeeeeeeeeeeeeeeee")
+  fs.readFile(filePath, 'utf8', (err,data)=> {
+    if(err) {
+      console.log(chalk.red(`No se pudo leer el fichero: ${err.message}`))
     }
-
-    // Obtener los funkos
-    let funkos: Funko[] = [];
-    funkos = JSON.parse(data);
-
-    const exists = funkos.some((f) => f.id === funko.id);
-    if (exists) {
-      console.error(chalk.red(`Error: Ya existe un Funko con el ID ${funko.id}`));
-      return;
+    let Funkos: Funko[]=[]
+    Funkos = JSON.parse(data)
+    //Comprobar que existe ese id
+    const exist = Funkos.some((f)=> f.id === funko.id)
+    if(exist) {
+      Funkos = Funkos.filter((f)=> f.id !== funko.id)
+      Funkos.push(funko)
+      fs.writeFile(filePath, JSON.stringify(Funkos, null, 2), 'utf8', (writerr)=> {
+        if(writerr) {
+          console.log(chalk.red(`Error al escribir en el fichero`))
+        } else {
+          console.log(chalk.green(`Se ha modificado el fichero correctamente`))
+        }
+      })
+    } else {
+      console.log(chalk.red(`No existe el Funko con id: ${funko.id} del usuario ${usuario}`))
     }
-
-    // Añadir el nuevo Funko al array
-    funkos.push(funko);
-
-    fs.writeFile(filePath, JSON.stringify(funkos, null, 2), 'utf8', (writeErr) => {
-      if (writeErr) {
-        console.error(chalk.red(`Error al escribir en el fichero: ${writeErr.message}`));
-      } else {
-        console.log(chalk.green(`Funko añadido correctamente: ${funko.nombre}`));
-      }
-    });
-  });
+  })
 }
 
-export const addCommand = {
-  command: 'add',
-  describe: 'Añadir un nuevo Funko a la colección',
+export const modifyCommand = {
+  command: 'modify',
+  describe: 'Comando para modificar funko existente',
   builder: (yargs: Argv) => {
     return yargs
       .option('usuario', { type: 'string', demandOption: true, describe: 'Nombre del usuario' })
@@ -82,8 +65,6 @@ export const addCommand = {
       caracteristicas: argv.caracteristicas,
       valorMercado: argv.valorMercado,
     };
-    setTimeout(() => {
-      addFunko(newFunko, argv.usuario);
-    }, 100); // Espera 100ms antes de ejecutar addFunko
+    modifyFunko(argv.usuario, newFunko)
   }
-};
+}

@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "id": 3,
+    "nombre": "Batman 2",
+    "desc": "Figura de colección de Batman",
+    "tipo": "POP",
+    "genero": "DC",
+    "franquicia": "DC Comics",
+    "numero": 1,
+    "exclusivo": true,
+    "caracteristicas": "no",
+    "valorMercado": 23.99
+  },
+  {
+    "id": 2,
+    "nombre": "Franco&Barreto",
+    "desc": "Figura de colección de Batman",
+    "tipo": "POP",
+    "genero": "ANIME",
+    "franquicia": "DC Comics",
+    "numero": 2,
+    "exclusivo": true,
+    "caracteristicas": "no",
+    "valorMercado": 53.99
+  }
+]
