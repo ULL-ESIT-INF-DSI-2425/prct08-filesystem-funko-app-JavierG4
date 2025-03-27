@@ -2,6 +2,13 @@ import fs from 'fs';
 import path from "path";
 import chalk from "chalk";
 
+/**
+fs.readdir()	
+fs.stat()	
+fs.cp()	
+fs.rm()	
+ */
+
 export function checkpath(user:string) {
   const dirPath = path.join(process.cwd(), `/db/${user}`);
   const filePath = path.join(process.cwd(), `/db/${user}/${user}.json`);
